@@ -10,6 +10,7 @@ interface IsometricCanvasProps {
   isScratchpadOpen: boolean;
   onToggleScratchpad: () => void;
   ecoMode?: boolean;
+  onToggleDevHud?: () => void;
 }
 
 export const IsometricCanvas: React.FC<IsometricCanvasProps> = ({
@@ -21,6 +22,7 @@ export const IsometricCanvas: React.FC<IsometricCanvasProps> = ({
   isScratchpadOpen,
   onToggleScratchpad,
   ecoMode = false,
+  onToggleDevHud,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -81,8 +83,14 @@ export const IsometricCanvas: React.FC<IsometricCanvasProps> = ({
     // Trigger ripple
     setClickRipple({ x: clickX, y: clickY, time: Date.now() });
 
+    // Tapping bottom left footer triggers Dev HUD
+    if (clickY > 270 && clickX < 260 && onToggleDevHud) {
+      onToggleDevHud();
+      return;
+    }
+
     // Always toggle scratchpad when tapping the desk or center area
-    if (isPointInDesk(clickX, clickY) || clickY > 160) {
+    if (isPointInDesk(clickX, clickY) || (clickY > 160 && clickY <= 270)) {
       onToggleScratchpad();
     }
   };

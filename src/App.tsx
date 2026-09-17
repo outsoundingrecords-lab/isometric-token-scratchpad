@@ -9,8 +9,26 @@ import { PresetScenario, TokenItem, AgentState, AlertState } from './types';
 import { IsometricCanvas } from './components/IsometricCanvas';
 import { Scratchpad } from './components/Scratchpad';
 import { ControlPanel } from './components/ControlPanel';
+import { DevModeOverlay } from './components/DevModeOverlay';
 import { playRetroTokenBlip, playDeskTapSound } from './utils/sound';
-import { Volume2, VolumeX, Cpu, Sparkles, Layers, Info } from 'lucide-react';
+import { serializeStateToHash, deserializeStateFromHash, SharedBreakdownState } from './utils/shareState';
+import {
+  Volume2,
+  VolumeX,
+  Cpu,
+  Sparkles,
+  Layers,
+  Info,
+  Maximize2,
+  Minimize2,
+  Share2,
+  Check,
+  Activity,
+  Play,
+  Pause,
+  StepForward,
+  RotateCcw,
+} from 'lucide-react';
 
 export default function App() {
   // Scenario state
@@ -26,12 +44,15 @@ export default function App() {
   const [alertCategory, setAlertCategory] = useState<AlertState['category']>('none');
   const [alertReason, setAlertReason] = useState<string>('');
 
-  // UI and playback state
+  // UI, immersion, and playback state
   const [isScratchpadOpen, setIsScratchpadOpen] = useState<boolean>(true);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speedMs, setSpeedMs] = useState<number>(180);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [ecoMode, setEcoMode] = useState<boolean>(false);
+  const [isImmersionMode, setIsImmersionMode] = useState<boolean>(false);
+  const [showDevHud, setShowDevHud] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Custom Prompt & Gemini Integration
   const [customPrompt, setCustomPrompt] = useState<string>('');
@@ -188,6 +209,90 @@ export default function App() {
     setIsScratchpadOpen((prev) => !prev);
   }, [soundEnabled]);
 
+  // Immersion Mode toggle handler
+  const handleToggleImmersion = useCallback(() => {
+    setIsImmersionMode((prev) => !prev);
+  }, []);
+
+  // Function to generate a URL-encoded hash of current streamedTokens & scenario
+  const handleShareState = useCallback(() => {
+    const statePayload: SharedBreakdownState = {
+      v: 1,
+      scenarioId: currentScenario.id,
+      customPrompt: currentScenario.id.startsWith('custom') ? customPrompt : undefined,
+      bufferLimit,
+      speedMs,
+      tokens: streamedTokens,
+      paperCount,
+      alertCategory,
+      timestamp: Date.now(),
+    };
+    const hash = serializeStateToHash(statePayload);
+    if (hash) {
+      window.location.hash = `state=${hash}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard
+          .writeText(window.location.href)
+          .then(() => {
+            setToastMessage('Breakdown URL copied to clipboard! Ready to share.');
+            setTimeout(() => setToastMessage(null), 3500);
+          })
+          .catch(() => {
+            setToastMessage('Breakdown state encoded in URL address bar!');
+            setTimeout(() => setToastMessage(null), 3500);
+          });
+      } else {
+        setToastMessage('Breakdown state encoded in URL address bar!');
+        setTimeout(() => setToastMessage(null), 3500);
+      }
+    }
+  }, [currentScenario, customPrompt, bufferLimit, speedMs, streamedTokens, paperCount, alertCategory]);
+
+  // Restore shared breakdown state from URL hash if present
+  useEffect(() => {
+    const loadStateFromUrl = () => {
+      const hash = window.location.hash;
+      if (!hash || !hash.includes('state=')) return;
+      const restored = deserializeStateFromHash(hash);
+      if (restored && Array.isArray(restored.tokens) && restored.tokens.length > 0) {
+        setStreamedTokens(restored.tokens);
+        setCurrentIndex(restored.tokens.length);
+        if (restored.bufferLimit) setBufferLimit(restored.bufferLimit);
+        if (restored.paperCount) setPaperCount(restored.paperCount);
+        if (restored.speedMs) setSpeedMs(restored.speedMs);
+        if (restored.alertCategory) setAlertCategory(restored.alertCategory);
+        setAgentState(
+          restored.tokens.length >= (restored.bufferLimit || 32) ? 'overflow' : 'complete'
+        );
+
+        const matched = PRESET_SCENARIOS.find((s) => s.id === restored.scenarioId);
+        if (matched) {
+          setCurrentScenario(matched);
+          setAllScenarioTokens(matched.initialTokens);
+        } else if (restored.customPrompt) {
+          setCustomPrompt(restored.customPrompt);
+          setCurrentScenario({
+            id: 'custom-shared',
+            title: 'Shared Breakdown State',
+            subtitle: `"${restored.customPrompt.slice(0, 24)}..."`,
+            prompt: restored.customPrompt,
+            category: 'reversal',
+            description: 'Imported token breakdown state from shared URL.',
+            breakdownExplanation: 'Preserved subword token predictions and logit distributions.',
+            maxBuffer: restored.bufferLimit || 32,
+            initialTokens: restored.tokens,
+          });
+        }
+        setToastMessage('Restored shared token breakdown state from URL!');
+        setTimeout(() => setToastMessage(null), 4000);
+      }
+    };
+
+    loadStateFromUrl();
+    window.addEventListener('hashchange', loadStateFromUrl);
+    return () => window.removeEventListener('hashchange', loadStateFromUrl);
+  }, []);
+
   // Global Keyboard Shortcuts for easy interface experience on desktops / laptops
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -218,12 +323,33 @@ export default function App() {
       } else if (e.key === 'r' || e.key === 'R') {
         e.preventDefault();
         resetSimulation(currentScenario);
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        handleToggleImmersion();
+      } else if (e.key === 'Escape' && isImmersionMode) {
+        e.preventDefault();
+        setIsImmersionMode(false);
+      } else if (
+        e.key === '`' ||
+        e.key === '~' ||
+        (e.shiftKey && (e.key === 'D' || e.key === 'd'))
+      ) {
+        e.preventDefault();
+        setShowDevHud((prev) => !prev);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, advanceToken, handleToggleDesk, resetSimulation, currentScenario]);
+  }, [
+    isPlaying,
+    advanceToken,
+    handleToggleDesk,
+    resetSimulation,
+    currentScenario,
+    handleToggleImmersion,
+    isImmersionMode,
+  ]);
 
   // Custom Prompt Execution
   const handleRunCustomPrompt = async () => {
@@ -327,6 +453,170 @@ export default function App() {
     }
   };
 
+  // If Immersion Mode is active, render full-focus viewport
+  if (isImmersionMode) {
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col justify-between p-3 sm:p-6 overflow-hidden select-none font-mono">
+        {/* Floating Immersion Top HUD */}
+        <div className="flex items-center justify-between bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl px-4 py-2.5 shadow-lg">
+          <div className="flex items-center gap-2 text-xs">
+            <div className="w-6 h-6 rounded bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center font-bold text-xs">
+              T1
+            </div>
+            <span className="font-bold text-slate-200">IMMERSION MODE</span>
+            <span className="hidden sm:inline-block text-[10px] text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800">
+              Focused Isometric Agent
+            </span>
+            {currentAlertState.category !== 'none' && (
+              <span className="text-[10px] text-rose-400 bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800 animate-pulse">
+                💧 Alert Active
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              id="immersion-share-btn"
+              onClick={handleShareState}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-cyan-300 border border-slate-700 text-xs transition-colors"
+              title="Copy breakdown share URL"
+            >
+              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+
+            <button
+              id="immersion-dev-btn"
+              onClick={() => setShowDevHud(!showDevHud)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-colors ${
+                showDevHud
+                  ? 'bg-cyan-950/80 border-cyan-500/60 text-cyan-300'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+              }`}
+              title="Toggle Dev Performance HUD (press ~ or Shift+D)"
+            >
+              <Activity className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Dev HUD</span>
+              <kbd className="text-[9px] bg-slate-900 text-slate-400 px-1 rounded border border-slate-700">~</kbd>
+            </button>
+
+            <button
+              id="immersion-sound-btn"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+              title={soundEnabled ? 'Disable Sound' : 'Enable Sound'}
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+            </button>
+
+            <button
+              id="exit-immersion-btn"
+              onClick={() => setIsImmersionMode(false)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-slate-950 font-bold text-xs shadow transition-all"
+              title="Exit Immersion Mode (or press F / Esc)"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              <span>Exit [F]</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Center: Full Focus on Isometric Agent */}
+        <div className="flex-1 flex items-center justify-center p-2 min-h-0">
+          <div className="w-full max-w-4xl max-h-full aspect-[480/300] flex items-center justify-center">
+            <IsometricCanvas
+              agentState={agentState}
+              alertState={currentAlertState}
+              tokenCount={streamedTokens.length}
+              maxBuffer={bufferLimit}
+              latestTokenText={streamedTokens[streamedTokens.length - 1]?.text}
+              isScratchpadOpen={isScratchpadOpen}
+              onToggleScratchpad={handleToggleDesk}
+              ecoMode={ecoMode}
+              onToggleDevHud={() => setShowDevHud((prev) => !prev)}
+            />
+          </div>
+        </div>
+
+        {/* Floating Immersion Bottom Playback Controls */}
+        <div className="max-w-xl mx-auto w-full bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-xl px-4 py-2.5 shadow-xl flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            {isPlaying ? (
+              <button
+                id="immersion-pause-btn"
+                onClick={handlePause}
+                className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-lg flex items-center gap-1.5 shadow active:scale-95"
+              >
+                <Pause className="w-3.5 h-3.5" />
+                <span>Pause</span>
+              </button>
+            ) : (
+              <button
+                id="immersion-stream-btn"
+                onClick={handleStart}
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-lg flex items-center gap-1.5 shadow active:scale-95"
+              >
+                <Play className="w-3.5 h-3.5" />
+                <span>Stream</span>
+              </button>
+            )}
+
+            <button
+              id="immersion-step-btn"
+              onClick={advanceToken}
+              disabled={currentIndex >= allScenarioTokens.length || isPlaying}
+              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 rounded-lg flex items-center gap-1 border border-slate-700"
+            >
+              <StepForward className="w-3.5 h-3.5" />
+              <span>Step</span>
+            </button>
+
+            <button
+              id="immersion-reset-btn"
+              onClick={() => resetSimulation(currentScenario)}
+              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg flex items-center gap-1 border border-slate-700"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+            <span>
+              Buffer: <strong className="text-slate-200">{streamedTokens.length}/{bufferLimit}</strong>
+            </span>
+            <span>
+              Papers: <strong className="text-cyan-400">{paperCount}</strong>
+            </span>
+            <button
+              onClick={handleToggleDesk}
+              className="hidden sm:inline-block text-[10px] text-cyan-300 underline hover:text-cyan-200"
+            >
+              Desk [D]
+            </button>
+          </div>
+        </div>
+
+        {/* Dev Mode Performance Overlay */}
+        <DevModeOverlay
+          isOpen={showDevHud}
+          onClose={() => setShowDevHud(false)}
+          ecoMode={ecoMode}
+          paperCount={paperCount}
+          tokenCount={streamedTokens.length}
+        />
+
+        {/* Toast Notification */}
+        {toastMessage && (
+          <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-950 border border-emerald-500 text-emerald-200 px-4 py-2 rounded-lg shadow-2xl text-xs flex items-center gap-2 animate-in fade-in">
+            <Check className="w-4 h-4 text-emerald-400" />
+            <span>{toastMessage}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Top Retro Profile Header */}
@@ -345,7 +635,7 @@ export default function App() {
                   Zero GPU Strain
                 </span>
                 <span className="hidden md:inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                  MIT License • Public Audited
+                  Apache-2.0 • Security Audited
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-mono hidden sm:block">
@@ -354,7 +644,46 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Share Breakdown Link Button */}
+            <button
+              id="header-share-btn"
+              onClick={handleShareState}
+              title="Copy link to share current token breakdown state"
+              className="px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-emerald-300 border border-slate-700 transition-colors flex items-center gap-1 text-xs font-mono"
+            >
+              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+
+            {/* Immersion Mode Button */}
+            <button
+              id="header-immersion-btn"
+              onClick={handleToggleImmersion}
+              title="Focus solely on the isometric agent (press F)"
+              className="px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-colors flex items-center gap-1 text-xs font-mono"
+            >
+              <Maximize2 className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden md:inline">Immersion</span>
+              <kbd className="text-[9px] bg-slate-900 text-slate-400 px-1 rounded border border-slate-700">F</kbd>
+            </button>
+
+            {/* Dev Mode Performance HUD Button */}
+            <button
+              id="header-devhud-btn"
+              onClick={() => setShowDevHud(!showDevHud)}
+              title="Toggle Dev Performance HUD (press ~ or Shift+D)"
+              className={`px-2.5 py-1.5 rounded-lg border transition-colors flex items-center gap-1 text-xs font-mono ${
+                showDevHud
+                  ? 'bg-cyan-950/80 border-cyan-500/60 text-cyan-300'
+                  : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden lg:inline">Dev HUD</span>
+              <kbd className="text-[9px] bg-slate-900 text-slate-400 px-1 rounded border border-slate-700">~</kbd>
+            </button>
+
             {/* Audio Toggle */}
             <button
               id="sound-toggle-btn"
@@ -376,7 +705,7 @@ export default function App() {
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>{isScratchpadOpen ? 'Scratchpad [OPEN]' : 'Tap Desk [CLOSED]'}</span>
+              <span>{isScratchpadOpen ? 'Scratchpad [OPEN]' : 'Desk [CLOSED]'}</span>
             </button>
           </div>
         </div>
@@ -398,6 +727,7 @@ export default function App() {
               isScratchpadOpen={isScratchpadOpen}
               onToggleScratchpad={handleToggleDesk}
               ecoMode={ecoMode}
+              onToggleDevHud={() => setShowDevHud((prev) => !prev)}
             />
 
             {/* Quick Metrics Bar directly under canvas */}
@@ -463,16 +793,21 @@ export default function App() {
               hasGeminiKey={hasGeminiKey}
               ecoMode={ecoMode}
               onToggleEcoMode={setEcoMode}
+              onToggleImmersion={handleToggleImmersion}
+              onShareState={handleShareState}
+              onToggleDevHud={() => setShowDevHud((prev) => !prev)}
             />
 
             {/* Quick Keyboard Navigation Bar */}
             <div className="hidden sm:flex items-center justify-between px-3 py-2 bg-slate-900/40 border border-slate-800/80 rounded-lg text-[11px] font-mono text-slate-400">
               <span className="text-slate-300 font-medium">⌨️ Quick Keys:</span>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-cyan-300">Space</kbd> Stream/Pause</span>
-                <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-cyan-300">S</kbd> Step Token</span>
-                <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-cyan-300">D</kbd> Tap Desk</span>
+                <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-cyan-300">S</kbd> Step</span>
+                <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-cyan-300">D</kbd> Desk</span>
                 <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-cyan-300">R</kbd> Reset</span>
+                <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-cyan-300">F</kbd> Immersion</span>
+                <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-cyan-300">~</kbd> Dev HUD</span>
               </div>
             </div>
           </div>
@@ -539,6 +874,23 @@ export default function App() {
           </div>
         </div>
       </main>
+
+      {/* Dev Mode Performance Overlay */}
+      <DevModeOverlay
+        isOpen={showDevHud}
+        onClose={() => setShowDevHud(false)}
+        ecoMode={ecoMode}
+        paperCount={paperCount}
+        tokenCount={streamedTokens.length}
+      />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-950 border border-emerald-500 text-emerald-200 px-4 py-2 rounded-lg shadow-2xl text-xs font-mono flex items-center gap-2 animate-in fade-in">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

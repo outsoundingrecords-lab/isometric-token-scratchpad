@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PRESET_SCENARIOS } from '../utils/tokenizer';
 import { PresetScenario, AgentState } from '../types';
-import { Play, Pause, StepForward, RotateCcw, Zap, Sparkles, Sliders } from 'lucide-react';
+import { Play, Pause, StepForward, RotateCcw, Zap, Sparkles, Sliders, Maximize2, Share2, Activity } from 'lucide-react';
 
 interface ControlPanelProps {
   currentScenario: PresetScenario;
@@ -25,6 +25,9 @@ interface ControlPanelProps {
   hasGeminiKey: boolean;
   ecoMode: boolean;
   onToggleEcoMode: (val: boolean) => void;
+  onToggleImmersion?: () => void;
+  onShareState?: () => void;
+  onToggleDevHud?: () => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -49,6 +52,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   hasGeminiKey,
   ecoMode,
   onToggleEcoMode,
+  onToggleImmersion,
+  onShareState,
+  onToggleDevHud,
 }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [isCustomMode, setIsCustomMode] = useState(false);
@@ -62,14 +68,42 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <Zap className="w-3.5 h-3.5 text-amber-400" />
             Model Constraint Scenarios:
           </span>
-          <button
-            id="toggle-settings-btn"
-            onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center gap-1 text-slate-400 hover:text-cyan-300 transition-colors"
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>{showSettings ? 'Hide Tuning' : 'Tune Buffer/Speed'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {onToggleImmersion && (
+              <button
+                id="panel-immersion-btn"
+                onClick={onToggleImmersion}
+                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-colors"
+                title="Toggle Immersion Mode (or press F)"
+              >
+                <Maximize2 className="w-3 h-3 text-cyan-400" />
+                <span>Immersion</span>
+                <kbd className="text-[9px] bg-slate-900 text-cyan-300 px-1 rounded border border-slate-700">F</kbd>
+              </button>
+            )}
+
+            {onShareState && (
+              <button
+                id="panel-share-btn"
+                onClick={onShareState}
+                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-colors"
+                title="Copy shareable URL with current tokens & scenario"
+              >
+                <Share2 className="w-3 h-3 text-emerald-400" />
+                <span>Share</span>
+              </button>
+            )}
+
+            <button
+              id="toggle-settings-btn"
+              onClick={() => setShowSettings(!showSettings)}
+              className="flex items-center gap-1 px-2 py-1 rounded text-slate-400 hover:text-cyan-300 hover:bg-slate-800/80 transition-colors"
+              title="Tune buffer limit & speed"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>{showSettings ? 'Hide Tuning' : 'Tune'}</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

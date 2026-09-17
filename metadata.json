@@ -1,6 +1,6 @@
 {
   "name": "Isometric Agent Token Scratchpad",
-  "description": "A minimalist 2.5D isometric pixel art agent visualizing LLM tokenization breakdowns, buffer overflows, and raw token predictions in real time.",
+  "description": "A minimalist 2.5D isometric pixel art agent visualizing LLM tokenization breakdowns, buffer overflows, and raw token predictions in real time. Apache-2.0 open-source with audited security disclosure.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

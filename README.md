@@ -2,9 +2,9 @@
 
 A stylized 2.5D isometric pixel-art interface and real-time model scratchpad designed for low-end mobile and web hardware with **zero GPU strain**.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Architecture: Canvas 2D](https://img.shields.io/badge/Render-HTML5_Canvas_2D-blue.svg)](#zero-gpu-render-architecture)
-[![Security: Audited](https://img.shields.io/badge/Security-Public_Audited-cyan.svg)](#security-audit--google-gemini-protection)
+[![Security: Audited Disclosure](https://img.shields.io/badge/Security-Public_Disclosure-cyan.svg)](SECURITY.md)
 
 ---
 
@@ -80,6 +80,7 @@ npm start
 
 ---
 
-## 📄 License
+## 📄 License & Security
 
-This project is licensed under the permissive [MIT License](LICENSE) — free for personal, educational, and commercial use.
+This project is licensed under the [Apache License 2.0](LICENSE) — free for personal, educational, and commercial use.
+For vulnerability reporting and API isolation disclosure, see [SECURITY.md](SECURITY.md).
