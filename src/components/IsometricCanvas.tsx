@@ -657,17 +657,18 @@ export const IsometricCanvas: React.FC<IsometricCanvasProps> = ({
       <button
         id="desk-tap-button"
         onClick={onToggleScratchpad}
-        className="absolute top-3 right-3 px-3 py-1.5 bg-slate-900/90 hover:bg-slate-800 text-xs font-mono text-cyan-300 border border-cyan-500/40 rounded-md shadow-lg flex items-center gap-1.5 transition-all active:scale-95"
+        className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 px-2 sm:px-3 py-1 sm:py-1.5 bg-slate-900/90 hover:bg-slate-800 text-[11px] sm:text-xs font-mono text-cyan-300 border border-cyan-500/40 rounded-md shadow-lg flex items-center gap-1.5 transition-all active:scale-95 z-10"
       >
         <span className="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-        {isScratchpadOpen ? 'Close Scratchpad' : 'Tap Desk / Scratchpad'}
+        <span className="sm:hidden">{isScratchpadOpen ? 'Close Pad' : 'Tap Desk'}</span>
+        <span className="hidden sm:inline">{isScratchpadOpen ? 'Close Scratchpad' : 'Tap Desk / Scratchpad'}</span>
       </button>
 
       {/* Alert Banner overlay when critical breakdown or buffer overflow occurs */}
       {alertState.category !== 'none' && (
-        <div className="absolute top-3 left-3 px-3 py-1.5 bg-rose-950/90 border border-rose-500/60 rounded-md text-rose-200 text-xs font-mono flex items-center gap-2 shadow-lg animate-bounce">
-          <span className="text-base leading-none">⚠️</span>
-          <span>{alertState.reason}</span>
+        <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 max-w-[50%] px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-950/90 border border-rose-500/60 rounded-md text-rose-200 text-[11px] sm:text-xs font-mono flex items-center gap-1.5 shadow-lg animate-bounce z-10 truncate">
+          <span className="text-sm leading-none shrink-0">⚠️</span>
+          <span className="truncate">{alertState.reason}</span>
         </div>
       )}
     </div>

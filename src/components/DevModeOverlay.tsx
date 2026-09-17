@@ -75,7 +75,7 @@ export const DevModeOverlay: React.FC<DevModeOverlayProps> = ({
   return (
     <div
       id="dev-mode-overlay"
-      className="fixed bottom-4 right-4 z-50 w-80 bg-slate-950/95 border border-cyan-500/60 rounded-xl shadow-2xl p-3.5 text-xs font-mono backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-200"
+      className="fixed bottom-4 right-2 sm:right-4 z-50 w-[calc(100vw-1rem)] sm:w-80 max-w-sm bg-slate-950/95 border border-cyan-500/60 rounded-xl shadow-2xl p-3.5 text-xs font-mono backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-200"
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">

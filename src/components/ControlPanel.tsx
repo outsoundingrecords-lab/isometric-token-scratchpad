@@ -63,22 +63,22 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-xl space-y-4 font-mono text-xs">
       {/* Preset Scenario Selector Buttons */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-slate-400">
-          <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-slate-400">
+          <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5 shrink-0">
             <Zap className="w-3.5 h-3.5 text-amber-400" />
             Model Constraint Scenarios:
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {onToggleImmersion && (
               <button
                 id="panel-immersion-btn"
                 onClick={onToggleImmersion}
-                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-colors text-[11px]"
                 title="Toggle Immersion Mode (or press F)"
               >
                 <Maximize2 className="w-3 h-3 text-cyan-400" />
                 <span>Immersion</span>
-                <kbd className="text-[9px] bg-slate-900 text-cyan-300 px-1 rounded border border-slate-700">F</kbd>
+                <kbd className="hidden sm:inline text-[9px] bg-slate-900 text-cyan-300 px-1 rounded border border-slate-700">F</kbd>
               </button>
             )}
 
@@ -86,7 +86,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <button
                 id="panel-share-btn"
                 onClick={onShareState}
-                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-colors text-[11px]"
                 title="Copy shareable URL with current tokens & scenario"
               >
                 <Share2 className="w-3 h-3 text-emerald-400" />
@@ -97,7 +97,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <button
               id="toggle-settings-btn"
               onClick={() => setShowSettings(!showSettings)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-slate-400 hover:text-cyan-300 hover:bg-slate-800/80 transition-colors"
+              className="flex items-center gap-1 px-2 py-1 rounded text-slate-400 hover:text-cyan-300 hover:bg-slate-800/80 transition-colors text-[11px]"
               title="Tune buffer limit & speed"
             >
               <Sliders className="w-3.5 h-3.5" />

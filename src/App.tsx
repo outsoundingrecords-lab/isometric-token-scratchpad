@@ -458,27 +458,27 @@ export default function App() {
     return (
       <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col justify-between p-3 sm:p-6 overflow-hidden select-none font-mono">
         {/* Floating Immersion Top HUD */}
-        <div className="flex items-center justify-between bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl px-4 py-2.5 shadow-lg">
-          <div className="flex items-center gap-2 text-xs">
-            <div className="w-6 h-6 rounded bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center font-bold text-xs">
+        <div className="flex items-center justify-between bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl px-2.5 sm:px-4 py-2 sm:py-2.5 shadow-lg w-full max-w-full overflow-hidden gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs min-w-0 flex-1">
+            <div className="w-6 h-6 shrink-0 rounded bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center font-bold text-xs">
               T1
             </div>
-            <span className="font-bold text-slate-200">IMMERSION MODE</span>
-            <span className="hidden sm:inline-block text-[10px] text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800">
-              Focused Isometric Agent
+            <span className="font-bold text-slate-200 truncate text-[11px] sm:text-xs">IMMERSION</span>
+            <span className="hidden sm:inline-block text-[10px] text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800 shrink-0">
+              Focused Agent
             </span>
             {currentAlertState.category !== 'none' && (
-              <span className="text-[10px] text-rose-400 bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800 animate-pulse">
-                💧 Alert Active
+              <span className="text-[10px] text-rose-400 bg-rose-950/80 px-1.5 sm:px-2 py-0.5 rounded border border-rose-800 animate-pulse shrink-0">
+                💧 Alert
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <button
               id="immersion-share-btn"
               onClick={handleShareState}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-cyan-300 border border-slate-700 text-xs transition-colors"
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-cyan-300 border border-slate-700 text-xs transition-colors flex items-center gap-1.5"
               title="Copy breakdown share URL"
             >
               <Share2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -488,7 +488,7 @@ export default function App() {
             <button
               id="immersion-dev-btn"
               onClick={() => setShowDevHud(!showDevHud)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-colors ${
+              className={`p-1.5 sm:px-3 sm:py-1.5 rounded-lg border text-xs transition-colors flex items-center gap-1.5 ${
                 showDevHud
                   ? 'bg-cyan-950/80 border-cyan-500/60 text-cyan-300'
                   : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
@@ -497,7 +497,7 @@ export default function App() {
             >
               <Activity className="w-3.5 h-3.5 text-cyan-400" />
               <span className="hidden sm:inline">Dev HUD</span>
-              <kbd className="text-[9px] bg-slate-900 text-slate-400 px-1 rounded border border-slate-700">~</kbd>
+              <kbd className="hidden lg:inline text-[9px] bg-slate-900 text-slate-400 px-1 rounded border border-slate-700">~</kbd>
             </button>
 
             <button
@@ -512,11 +512,12 @@ export default function App() {
             <button
               id="exit-immersion-btn"
               onClick={() => setIsImmersionMode(false)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-slate-950 font-bold text-xs shadow transition-all"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-slate-950 font-bold text-xs shadow transition-all"
               title="Exit Immersion Mode (or press F / Esc)"
             >
-              <Minimize2 className="w-3.5 h-3.5" />
-              <span>Exit [F]</span>
+              <Minimize2 className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">Exit [F]</span>
+              <span className="sm:hidden">Exit</span>
             </button>
           </div>
         </div>
@@ -618,42 +619,43 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="w-full max-w-full overflow-x-hidden min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Top Retro Profile Header */}
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-4 py-3 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center font-mono font-bold text-sm shadow-inner">
+      <header className="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md px-2.5 sm:px-4 py-2 sm:py-3 sticky top-0 z-30 w-full max-w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4 w-full">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center font-mono font-bold text-xs sm:text-sm shadow-inner">
               T1
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-sm sm:text-base font-bold font-mono tracking-tight text-slate-100">
-                  Tier 1: Minimalist Agent Profile
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-xs sm:text-base font-bold font-mono tracking-tight text-slate-100 truncate">
+                  <span className="sm:hidden">Tier 1 Agent</span>
+                  <span className="hidden sm:inline">Tier 1: Minimalist Agent Profile</span>
                 </h1>
-                <span className="hidden sm:inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800">
-                  Zero GPU Strain
+                <span className="hidden sm:inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800 shrink-0">
+                  Zero GPU
                 </span>
-                <span className="hidden md:inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                  Apache-2.0 • Security Audited
+                <span className="hidden md:inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
+                  Apache-2.0
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-mono hidden sm:block">
+              <p className="text-xs text-slate-400 font-mono hidden sm:block truncate">
                 Visual Metaphor: 2.5D Isometric Pixel Art • Canvas 2D • Live Model Scratchpad
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Share Breakdown Link Button */}
             <button
               id="header-share-btn"
               onClick={handleShareState}
               title="Copy link to share current token breakdown state"
-              className="px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-emerald-300 border border-slate-700 transition-colors flex items-center gap-1 text-xs font-mono"
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-emerald-300 border border-slate-700 transition-colors flex items-center gap-1 text-xs font-mono"
             >
               <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Share</span>
+              <span className="hidden md:inline">Share</span>
             </button>
 
             {/* Immersion Mode Button */}
@@ -661,11 +663,11 @@ export default function App() {
               id="header-immersion-btn"
               onClick={handleToggleImmersion}
               title="Focus solely on the isometric agent (press F)"
-              className="px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-colors flex items-center gap-1 text-xs font-mono"
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-colors flex items-center gap-1 text-xs font-mono"
             >
               <Maximize2 className="w-3.5 h-3.5 text-cyan-400" />
               <span className="hidden md:inline">Immersion</span>
-              <kbd className="text-[9px] bg-slate-900 text-slate-400 px-1 rounded border border-slate-700">F</kbd>
+              <kbd className="hidden lg:inline text-[9px] bg-slate-900 text-slate-400 px-1 rounded border border-slate-700">F</kbd>
             </button>
 
             {/* Dev Mode Performance HUD Button */}
@@ -673,7 +675,7 @@ export default function App() {
               id="header-devhud-btn"
               onClick={() => setShowDevHud(!showDevHud)}
               title="Toggle Dev Performance HUD (press ~ or Shift+D)"
-              className={`px-2.5 py-1.5 rounded-lg border transition-colors flex items-center gap-1 text-xs font-mono ${
+              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border transition-colors flex items-center gap-1 text-xs font-mono ${
                 showDevHud
                   ? 'bg-cyan-950/80 border-cyan-500/60 text-cyan-300'
                   : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700'
@@ -681,7 +683,7 @@ export default function App() {
             >
               <Activity className="w-3.5 h-3.5 text-cyan-400" />
               <span className="hidden lg:inline">Dev HUD</span>
-              <kbd className="text-[9px] bg-slate-900 text-slate-400 px-1 rounded border border-slate-700">~</kbd>
+              <kbd className="hidden lg:inline text-[9px] bg-slate-900 text-slate-400 px-1 rounded border border-slate-700">~</kbd>
             </button>
 
             {/* Audio Toggle */}
@@ -689,7 +691,7 @@ export default function App() {
               id="sound-toggle-btn"
               onClick={() => setSoundEnabled(!soundEnabled)}
               title={soundEnabled ? 'Disable 8-bit retro sound' : 'Enable 8-bit retro sound'}
-              className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+              className="p-1.5 sm:p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
             >
               {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
             </button>
@@ -698,25 +700,27 @@ export default function App() {
             <button
               id="header-scratchpad-btn"
               onClick={handleToggleDesk}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium border transition-all flex items-center gap-1.5 ${
+              title="Toggle scratchpad view"
+              className={`px-2 sm:px-3 py-1.5 rounded-lg text-xs font-mono font-medium border transition-all flex items-center gap-1 sm:gap-1.5 ${
                 isScratchpadOpen
                   ? 'bg-cyan-950/60 border-cyan-500/50 text-cyan-300 shadow-sm'
                   : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
-              <span>{isScratchpadOpen ? 'Scratchpad [OPEN]' : 'Desk [CLOSED]'}</span>
+              <Layers className="w-3.5 h-3.5 shrink-0" />
+              <span className="sm:hidden">{isScratchpadOpen ? 'Pad' : 'Desk'}</span>
+              <span className="hidden sm:inline">{isScratchpadOpen ? 'Scratchpad [OPEN]' : 'Desk [CLOSED]'}</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Workspace Layout */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex flex-col gap-5">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-2.5 sm:p-5 flex flex-col gap-4 sm:gap-5 overflow-hidden">
         {/* Core Workspace Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start w-full max-w-full">
           {/* LEFT: ISOMETRIC CANVAS & CONTROL PANEL (7 columns on desktop) */}
-          <div className="lg:col-span-7 flex flex-col gap-4">
+          <div className="lg:col-span-7 flex flex-col gap-3 sm:gap-4 w-full max-w-full overflow-hidden">
             {/* 2.5D Isometric Canvas */}
             <IsometricCanvas
               agentState={agentState}
@@ -731,38 +735,38 @@ export default function App() {
             />
 
             {/* Quick Metrics Bar directly under canvas */}
-            <div className="grid grid-cols-3 gap-2.5 font-mono text-xs">
-              <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wide">Context Buffer</div>
-                <div className="text-sm font-bold text-slate-200 mt-0.5 flex items-center justify-between">
-                  <span>{streamedTokens.length} / {bufferLimit}</span>
-                  <span className={`text-[11px] ${bufferPercent >= 90 ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`}>
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 font-mono text-xs w-full max-w-full">
+              <div className="bg-slate-900/80 border border-slate-800 p-2 sm:p-2.5 rounded-lg min-w-0">
+                <div className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wide truncate">Context Buffer</div>
+                <div className="text-xs sm:text-sm font-bold text-slate-200 mt-0.5 flex items-center justify-between">
+                  <span className="truncate">{streamedTokens.length}/{bufferLimit}</span>
+                  <span className={`text-[10px] sm:text-[11px] shrink-0 ml-1 ${bufferPercent >= 90 ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`}>
                     {Math.round(bufferPercent)}%
                   </span>
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wide">Paper Stack</div>
-                <div className="text-sm font-bold text-slate-200 mt-0.5 flex items-center justify-between">
-                  <span>{paperCount} sheets</span>
-                  <span className="text-[11px] text-cyan-400">
+              <div className="bg-slate-900/80 border border-slate-800 p-2 sm:p-2.5 rounded-lg min-w-0">
+                <div className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wide truncate">Paper Stack</div>
+                <div className="text-xs sm:text-sm font-bold text-slate-200 mt-0.5 flex items-center justify-between">
+                  <span className="truncate">{paperCount} sh</span>
+                  <span className="text-[10px] sm:text-[11px] text-cyan-400 shrink-0 ml-1">
                     {paperCount > 15 ? '⚠️ High' : 'Normal'}
                   </span>
                 </div>
               </div>
 
-              <div className="bg-slate-900/80 border border-slate-800 p-2.5 rounded-lg">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wide">Agent Alert</div>
-                <div className="text-sm font-bold truncate mt-0.5">
+              <div className="bg-slate-900/80 border border-slate-800 p-2 sm:p-2.5 rounded-lg min-w-0">
+                <div className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wide truncate">Agent Alert</div>
+                <div className="text-xs sm:text-sm font-bold truncate mt-0.5">
                   {currentAlertState.category !== 'none' ? (
-                    <span className="text-rose-400 flex items-center gap-1 animate-pulse">
-                      💧 Sweat / Alert
+                    <span className="text-rose-400 flex items-center gap-1 animate-pulse truncate">
+                      💧 Alert
                     </span>
                   ) : agentState === 'processing' ? (
-                    <span className="text-cyan-400">⌨️ Typing</span>
+                    <span className="text-cyan-400 truncate">⌨️ Typing</span>
                   ) : (
-                    <span className="text-slate-400">😴 Idle</span>
+                    <span className="text-slate-400 truncate">😴 Idle</span>
                   )}
                 </div>
               </div>
